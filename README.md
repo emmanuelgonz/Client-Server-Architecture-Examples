@@ -130,6 +130,8 @@ python3 -m http.server 8080
 # Open http://localhost:8080
 ```
 
+NORAD Catalog IDs are available at: https://www.n2yo.com/database/ 
+
 ---
 
 ## Comparison Matrix

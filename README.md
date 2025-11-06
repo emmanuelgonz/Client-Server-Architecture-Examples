@@ -92,7 +92,7 @@ streamlit run main.py --server.headless true
 
 # OR HTML (Browser)
 cd ../frontend_html
-python -m http.server 8080
+python3 -m http.server 8080
 # Open http://localhost:8080
 ```
 
@@ -126,7 +126,7 @@ streamlit run main.py --server.headless true
 
 # OR HTML (Browser)
 cd ../frontend_tracking_html
-python -m http.server 8080
+python3 -m http.server 8080
 # Open http://localhost:8080
 ```
 

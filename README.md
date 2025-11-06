@@ -190,47 +190,6 @@ python -m http.server 8080
 
 ---
 
-## Pedagogical Progression
-
-### Lecture 18-19: API & Backend
-
-**Concepts**: REST APIs, HTTP methods, FastAPI, async/await
-
-**Examples**: `backend_sql/` or `backend_orm/`
-
-**Key Topics**:
-- GET, POST, PUT, PATCH, DELETE
-- Request/response models (Pydantic)
-- Database CRUD operations
-- Dependency injection
-
-### Lecture 20: Frontend
-
-**Concepts**: Client-server architecture, API consumption
-
-**Examples**: `frontend_streamlit/` or `frontend_html/`
-
-**Key Topics**:
-- HTTP requests from client
-- JSON data exchange
-- Form handling
-- Error handling
-
-### Term Project: Advanced Integration
-
-**Concepts**: External APIs, real-time data, visualization
-
-**Examples**: `backend_tracking/` + tracking frontends
-
-**Key Topics**:
-- TLE orbital data format
-- SGP4 propagation algorithm
-- Real-time position calculation
-- Map-based visualization
-- Auto-refresh patterns
-
----
-
 ## API Endpoints Reference
 
 ### Basic CRUD Endpoints

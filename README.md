@@ -8,11 +8,11 @@ Complete examples demonstrating client-server architecture for IEE 305 (Informat
 client_server/
 ├── backend_sql/                    # Basic FastAPI + SQLite
 ├── backend_orm/                    # FastAPI + SQLModel ORM
-├── backend_tracking/               # FastAPI + Satellite Tracking ⭐ NEW
+├── backend_tracking/               # FastAPI + Satellite Tracking ⭐ ADVANCED
 ├── frontend_streamlit/             # Basic Streamlit frontend
 ├── frontend_html/                  # Basic HTML/JS frontend
-├── frontend_tracking_streamlit/    # Streamlit + Live Maps ⭐ NEW
-├── frontend_tracking_html/         # HTML/JS + Live Maps ⭐ NEW
+├── frontend_tracking_streamlit/    # Streamlit + Live Maps ⭐ ADVANCED
+├── frontend_tracking_html/         # HTML/JS + Live Maps ⭐ ADVANCED
 └── README.md                       # This file
 ```
 

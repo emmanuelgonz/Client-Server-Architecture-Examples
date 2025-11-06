@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Tracker - Live Positions</title>
+
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .connection-status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .connection-status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .connection-status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background-color: #f5f5f5;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: #f9f9f9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .form-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .message {
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .satellite-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .satellite-card {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .satellite-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .satellite-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .auto-refresh-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .auto-refresh-controls input[type="checkbox"] {
+            width: auto;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛰️ Live Satellite Tracking System</h1>
+            <p class="subtitle">Real-time satellite positions using TLE orbital data and SGP4 propagation</p>
+        </header>
+
+        <div id="connectionStatus" class="connection-status disconnected">
+            Checking connection to API...
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('map')">🗺️ Live Map</button>
+            <button class="tab" onclick="showTab('positions')">📋 Positions</button>
+            <button class="tab" onclick="showTab('satellites')">🛰️ Satellites</button>
+            <button class="tab" onclick="showTab('add')">➕ Add Satellite</button>
+        </div>
+
+        <!-- Live Map Tab -->
+        <div id="map-tab" class="tab-content active">
+            <h2>Live Satellite Positions</h2>
+
+            <div class="auto-refresh-controls">
+                <input type="checkbox" id="autoRefresh" checked>
+                <label for="autoRefresh" style="margin: 0;">Auto-refresh every 5 seconds</label>
+                <span id="countdown" style="margin-left: auto; font-weight: bold;"></span>
+            </div>
+
+            <div class="controls">
+                <button onclick="loadPositions()">🔄 Refresh Now</button>
+                <button onclick="centerMap()">📍 Center Map</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Satellites Tracked</div>
+                    <div class="stat-value" id="satCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Last Update</div>
+                    <div class="stat-value" id="lastUpdate" style="font-size: 1.2em;">--:--:--</div>
+                </div>
+            </div>
+
+            <div id="map"></div>
+        </div>
+
+        <!-- Positions Tab -->
+        <div id="positions-tab" class="tab-content">
+            <h2>Current Satellite Positions</h2>
+
+            <button onclick="loadPositions()">🔄 Refresh Positions</button>
+
+            <table id="positionsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>NORAD ID</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Altitude (km)</th>
+                    </tr>
+                </thead>
+                <tbody id="positionsBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px;">Loading positions...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Satellites Tab -->
+        <div id="satellites-tab" class="tab-content">
+            <h2>Satellite Database</h2>
+
+            <button onclick="loadSatellites()">🔄 Refresh</button>
+
+            <div id="satelliteList" class="satellite-list">
+                <p style="text-align: center; padding: 40px;">Loading satellites...</p>
+            </div>
+        </div>
+
+        <!-- Add Satellite Tab -->
+        <div id="add-tab" class="tab-content">
+            <h2>Add New Satellite</h2>
+
+            <div class="form-section">
+                <h3>Fetch TLE from Celestrak</h3>
+                <p style="margin-bottom: 15px;">
+                    Enter a NORAD ID to fetch current TLE data automatically.
+                    <br><strong>Popular satellites:</strong> ISS (25544), Hubble (20580), Starlink-1007 (44713)
+                </p>
+
+                <form id="fetchForm" onsubmit="fetchTLE(event)">
+                    <div class="form-group">
+                        <label for="fetchNoradId">NORAD Catalog ID</label>
+                        <input type="number" id="fetchNoradId" required placeholder="e.g., 25544">
+                    </div>
+                    <button type="submit">Fetch TLE Data</button>
+                </form>
+            </div>
+
+            <div class="form-section" id="createSection" style="display: none;">
+                <h3>Create Satellite</h3>
+                <form id="createForm" onsubmit="createSatellite(event)">
+                    <div class="form-group">
+                        <label for="satName">Satellite Name *</label>
+                        <input type="text" id="satName" required placeholder="e.g., ISS (ZARYA)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="satNoradId">NORAD ID *</label>
+                        <input type="number" id="satNoradId" required readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="satTle1">TLE Line 1 (69 characters) *</label>
+                        <input type="text" id="satTle1" required maxlength="69" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="satTle2">TLE Line 2 (69 characters) *</label>
+                        <input type="text" id="satTle2" required maxlength="69" readonly>
+                    </div>
+
+                    <button type="submit">Create Satellite</button>
+                    <button type="button" onclick="cancelCreate()">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000';
+        const API_ENDPOINT = `${API_BASE_URL}/satellites/`;
+
+        // Global state
+        let map = null;
+        let markers = [];
+        let positions = [];
+        let autoRefreshInterval = null;
+        let countdownInterval = null;
+        let countdownSeconds = 5;
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([0, 0], 2);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18,
+            }).addTo(map);
+        }
+
+        // Check connection
+        async function checkConnection() {
+            const statusDiv = document.getElementById('connectionStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/`, { timeout: 2000 });
+                if (response.ok) {
+                    statusDiv.textContent = `✅ Connected to API at ${API_BASE_URL}`;
+                    statusDiv.className = 'connection-status connected';
+                    return true;
+                }
+            } catch (error) {
+                statusDiv.textContent = `❌ Cannot connect to API at ${API_BASE_URL}. Make sure the backend is running!`;
+                statusDiv.className = 'connection-status disconnected';
+                return false;
+            }
+        }
+
+        // Tab navigation
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(button => button.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load data
+            if (tabName === 'map') {
+                loadPositions();
+            } else if (tabName === 'positions') {
+                loadPositions();
+            } else if (tabName === 'satellites') {
+                loadSatellites();
+            }
+        }
+
+        // Message display
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type} show`;
+
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Load satellite positions
+        async function loadPositions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/satellites/positions`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                positions = await response.json();
+
+                // Update map
+                updateMap(positions);
+
+                // Update positions table
+                updatePositionsTable(positions);
+
+                // Update stats
+                document.getElementById('satCount').textContent = positions.length;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+            } catch (error) {
+                showMessage(`Failed to load positions: ${error.message}`, 'error');
+            }
+        }
+
+        // Update map with positions
+        function updateMap(positions) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add new markers
+            positions.forEach(pos => {
+                const marker = L.marker([pos.latitude, pos.longitude])
+                    .addTo(map)
+                    .bindPopup(`
+                        <strong>${pos.name}</strong><br>
+                        NORAD: ${pos.norad_id}<br>
+                        Lat: ${pos.latitude.toFixed(2)}°<br>
+                        Lon: ${pos.longitude.toFixed(2)}°<br>
+                        Alt: ${pos.altitude_km.toFixed(0)} km
+                    `);
+                markers.push(marker);
+            });
+        }
+
+        // Center map on satellites
+        function centerMap() {
+            if (positions.length === 0) return;
+
+            const latitudes = positions.map(p => p.latitude);
+            const longitudes = positions.map(p => p.longitude);
+
+            const bounds = [
+                [Math.min(...latitudes), Math.min(...longitudes)],
+                [Math.max(...latitudes), Math.max(...longitudes)]
+            ];
+
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+
+        // Update positions table
+        function updatePositionsTable(positions) {
+            const tbody = document.getElementById('positionsBody');
+            tbody.innerHTML = '';
+
+            if (positions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No satellites found</td></tr>';
+                return;
+            }
+
+            positions.forEach(pos => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${pos.name}</td>
+                    <td>${pos.norad_id}</td>
+                    <td>${pos.latitude.toFixed(4)}°</td>
+                    <td>${pos.longitude.toFixed(4)}°</td>
+                    <td>${pos.altitude_km.toFixed(2)}</td>
+                `;
+            });
+        }
+
+        // Load all satellites
+        async function loadSatellites() {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const satellites = await response.json();
+                const listDiv = document.getElementById('satelliteList');
+                listDiv.innerHTML = '';
+
+                if (satellites.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align: center; padding: 40px;">No satellites in database</p>';
+                    return;
+                }
+
+                satellites.forEach(sat => {
+                    const card = document.createElement('div');
+                    card.className = 'satellite-card';
+                    card.innerHTML = `
+                        <h3>${sat.name}</h3>
+                        <div class="satellite-details">
+                            <div><strong>ID:</strong> ${sat.id}</div>
+                            <div><strong>NORAD:</strong> ${sat.norad_id}</div>
+                            <div><strong>Updated:</strong> ${new Date(sat.tle_updated).toLocaleDateString()}</div>
+                            <div></div>
+                            <div style="grid-column: 1 / -1;">
+                                <strong>TLE 1:</strong> <code>${sat.tle_line1}</code>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <strong>TLE 2:</strong> <code>${sat.tle_line2}</code>
+                            </div>
+                        </div>
+                    `;
+                    listDiv.appendChild(card);
+                });
+
+            } catch (error) {
+                showMessage(`Failed to load satellites: ${error.message}`, 'error');
+            }
+        }
+
+        // Fetch TLE from Celestrak
+        async function fetchTLE(event) {
+            event.preventDefault();
+
+            const noradId = document.getElementById('fetchNoradId').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/satellites/fetch-tle/${noradId}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+
+                // Populate create form
+                document.getElementById('satNoradId').value = data.norad_id;
+                document.getElementById('satTle1').value = data.tle_line1;
+                document.getElementById('satTle2').value = data.tle_line2;
+
+                // Show create section
+                document.getElementById('createSection').style.display = 'block';
+                showMessage('TLE data fetched successfully! Now enter a name for the satellite.', 'success');
+
+            } catch (error) {
+                showMessage(`Failed to fetch TLE: ${error.message}`, 'error');
+            }
+        }
+
+        // Create satellite
+        async function createSatellite(event) {
+            event.preventDefault();
+
+            const data = {
+                name: document.getElementById('satName').value,
+                norad_id: parseInt(document.getElementById('satNoradId').value),
+                tle_line1: document.getElementById('satTle1').value,
+                tle_line2: document.getElementById('satTle2').value
+            };
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+                showMessage(`✅ Created satellite '${data.name}' with ID: ${result.id}`, 'success');
+
+                // Reset forms
+                document.getElementById('fetchForm').reset();
+                document.getElementById('createForm').reset();
+                document.getElementById('createSection').style.display = 'none';
+
+            } catch (error) {
+                showMessage(`❌ Failed to create satellite: ${error.message}`, 'error');
+            }
+        }
+
+        // Cancel create
+        function cancelCreate() {
+            document.getElementById('createForm').reset();
+            document.getElementById('createSection').style.display = 'none';
+        }
+
+        // Auto-refresh logic
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            countdownSeconds = 5;
+
+            autoRefreshInterval = setInterval(() => {
+                loadPositions();
+                countdownSeconds = 5;
+            }, 5000);
+
+            countdownInterval = setInterval(() => {
+                countdownSeconds--;
+                document.getElementById('countdown').textContent = `Refreshing in ${countdownSeconds}s`;
+                if (countdownSeconds <= 0) countdownSeconds = 5;
+            }, 1000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = '';
+        }
+
+        // Auto-refresh toggle
+        document.getElementById('autoRefresh').addEventListener('change', function() {
+            if (this.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            initMap();
+            const connected = await checkConnection();
+
+            if (connected) {
+                loadPositions();
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>

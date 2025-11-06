@@ -1,0 +1,14 @@
+name: satellite-tracking
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - fastapi>=0.115.0
+      - aiosqlite>=0.20.0
+      - uvicorn>=0.32.0
+      - pydantic>=2.9.0
+      - skyfield>=1.49
+      - requests>=2.32.0

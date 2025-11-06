@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Manager - HTML Frontend</title>
+    <style>
+        /* ============================================
+           Basic Styling
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .connection-status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .connection-status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .connection-status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ============================================
+           Tab Navigation
+           ============================================ */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background-color: #f5f5f5;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ============================================
+           Forms
+           ============================================ */
+        .form-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        /* ============================================
+           Table
+           ============================================ */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* ============================================
+           Messages
+           ============================================ */
+        .message {
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* ============================================
+           Checkboxes for PATCH
+           ============================================ */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+        }
+
+        /* ============================================
+           HTTP Method Badge
+           ============================================ */
+        .http-method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .http-method.get { background: #61affe; color: white; }
+        .http-method.post { background: #49cc90; color: white; }
+        .http-method.put { background: #fca130; color: white; }
+        .http-method.patch { background: #50e3c2; color: white; }
+        .http-method.delete { background: #f93e3e; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛰️ Satellite Management System</h1>
+            <p class="subtitle">HTML/JavaScript Frontend consuming FastAPI Backend</p>
+        </header>
+
+        <div id="connectionStatus" class="connection-status disconnected">
+            Checking connection to API...
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('view')">📋 View All</button>
+            <button class="tab" onclick="showTab('create')">➕ Create</button>
+            <button class="tab" onclick="showTab('update')">✏️ Update (PUT)</button>
+            <button class="tab" onclick="showTab('patch')">🔧 Update (PATCH)</button>
+            <button class="tab" onclick="showTab('delete')">🗑️ Delete</button>
+        </div>
+
+        <!-- View Tab -->
+        <div id="view" class="tab-content active">
+            <h2>All Satellites</h2>
+            <span class="http-method get">GET /satellites/</span>
+            <button onclick="loadSatellites()">🔄 Refresh Data</button>
+            <div class="table-container">
+                <table id="satellitesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Acronym</th>
+                            <th>Mass (kg)</th>
+                            <th>Power (W)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="satellitesBody">
+                        <tr>
+                            <td colspan="4" class="empty-state">Loading satellites...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Create Tab -->
+        <div id="create" class="tab-content">
+            <h2>Create New Satellite</h2>
+            <span class="http-method post">POST /satellites/</span>
+            <div class="form-section">
+                <form id="createForm" onsubmit="createSatellite(event)">
+                    <div class="form-group">
+                        <label for="createAcronym">Acronym *</label>
+                        <input type="text" id="createAcronym" required placeholder="e.g., ISS">
+                    </div>
+                    <div class="form-group">
+                        <label for="createMass">Mass (kg) *</label>
+                        <input type="number" id="createMass" step="0.01" required placeholder="e.g., 100.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="createPower">Power (W) *</label>
+                        <input type="number" id="createPower" step="0.01" required placeholder="e.g., 50.00">
+                    </div>
+                    <button type="submit">Create Satellite</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Update (PUT) Tab -->
+        <div id="update" class="tab-content">
+            <h2>Update Satellite (Full Replacement)</h2>
+            <span class="http-method put">PUT /satellites/{id}</span>
+            <p class="info"><strong>Note:</strong> PUT replaces all fields of the satellite.</p>
+            <div class="form-section">
+                <form id="updateForm" onsubmit="updateSatellite(event)">
+                    <div class="form-group">
+                        <label for="updateSelect">Select Satellite *</label>
+                        <select id="updateSelect" required onchange="populateUpdateForm()">
+                            <option value="">-- Select a satellite --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateAcronym">New Acronym *</label>
+                        <input type="text" id="updateAcronym" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateMass">New Mass (kg) *</label>
+                        <input type="number" id="updateMass" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePower">New Power (W) *</label>
+                        <input type="number" id="updatePower" step="0.01" required>
+                    </div>
+                    <button type="submit">Update Satellite</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Patch Tab -->
+        <div id="patch" class="tab-content">
+            <h2>Update Satellite (Partial Update)</h2>
+            <span class="http-method patch">PATCH /satellites/{id}</span>
+            <p class="info"><strong>Note:</strong> PATCH updates only the fields you specify.</p>
+            <div class="form-section">
+                <form id="patchForm" onsubmit="patchSatellite(event)">
+                    <div class="form-group">
+                        <label for="patchSelect">Select Satellite *</label>
+                        <select id="patchSelect" required onchange="populatePatchForm()">
+                            <option value="">-- Select a satellite --</option>
+                        </select>
+                    </div>
+                    <div id="patchCurrentData" style="background: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: none;">
+                        <strong>Current Values:</strong>
+                        <pre id="patchCurrentJson" style="margin-top: 10px; font-size: 0.9em;"></pre>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="patchAcronymCheck" onchange="toggleField('patchAcronym', this.checked)">
+                        <label for="patchAcronymCheck">Update Acronym</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="patchAcronym" disabled>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="patchMassCheck" onchange="toggleField('patchMass', this.checked)">
+                        <label for="patchMassCheck">Update Mass</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="patchMass" step="0.01" disabled>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="patchPowerCheck" onchange="toggleField('patchPower', this.checked)">
+                        <label for="patchPowerCheck">Update Power</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="patchPower" step="0.01" disabled>
+                    </div>
+                    <button type="submit">Patch Satellite</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Tab -->
+        <div id="delete" class="tab-content">
+            <h2>Delete Satellite</h2>
+            <span class="http-method delete">DELETE /satellites/{id}</span>
+            <p class="info" style="color: #dc3545;"><strong>⚠️ Warning:</strong> This action cannot be undone!</p>
+            <div class="form-section">
+                <form id="deleteForm" onsubmit="deleteSatellite(event)">
+                    <div class="form-group">
+                        <label for="deleteSelect">Select Satellite to Delete *</label>
+                        <select id="deleteSelect" required onchange="showDeleteConfirmation()">
+                            <option value="">-- Select a satellite --</option>
+                        </select>
+                    </div>
+                    <div id="deleteConfirmation" style="display: none; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; margin-bottom: 15px;">
+                        <strong>Are you sure you want to delete this satellite?</strong>
+                        <p id="deleteDetails" style="margin-top: 10px;"></p>
+                    </div>
+                    <button type="submit" class="danger">🗑️ Delete Satellite</button>
+                    <button type="button" class="secondary" onclick="cancelDelete()">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Configuration
+        // ============================================
+        const API_BASE_URL = 'http://localhost:8000';
+        const API_ENDPOINT = `${API_BASE_URL}/satellites/`;
+        let satellitesCache = [];
+
+        // ============================================
+        // Initialize on page load
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkConnection();
+            loadSatellites();
+        });
+
+        // ============================================
+        // Connection Check
+        // ============================================
+        async function checkConnection() {
+            const statusDiv = document.getElementById('connectionStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/docs`, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                statusDiv.textContent = `✅ Connected to API at ${API_BASE_URL}`;
+                statusDiv.className = 'connection-status connected';
+            } catch (error) {
+                statusDiv.textContent = `❌ Cannot connect to API at ${API_BASE_URL}. Make sure the backend is running!`;
+                statusDiv.className = 'connection-status disconnected';
+            }
+        }
+
+        // ============================================
+        // Tab Navigation
+        // ============================================
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Set active button
+            event.target.classList.add('active');
+
+            // Load data if needed
+            if (tabName === 'update' || tabName === 'patch' || tabName === 'delete') {
+                loadSatellitesForSelect(tabName);
+            }
+        }
+
+        // ============================================
+        // Message Display
+        // ============================================
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type} show`;
+
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // ============================================
+        // READ: Get all satellites
+        // ============================================
+        async function loadSatellites() {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const satellites = await response.json();
+                satellitesCache = satellites;
+
+                const tbody = document.getElementById('satellitesBody');
+                tbody.innerHTML = '';
+
+                if (satellites.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No satellites found. Create one in the Create tab!</td></tr>';
+                } else {
+                    satellites.forEach(sat => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td>${sat.id}</td>
+                            <td>${sat.acronym}</td>
+                            <td>${sat.mass}</td>
+                            <td>${sat.power}</td>
+                        `;
+                    });
+                }
+            } catch (error) {
+                showMessage(`Failed to load satellites: ${error.message}`, 'error');
+                document.getElementById('satellitesBody').innerHTML =
+                    '<tr><td colspan="4" class="empty-state">Error loading satellites</td></tr>';
+            }
+        }
+
+        // ============================================
+        // CREATE: Add new satellite
+        // ============================================
+        async function createSatellite(event) {
+            event.preventDefault();
+
+            const acronym = document.getElementById('createAcronym').value;
+            const mass = parseFloat(document.getElementById('createMass').value);
+            const power = parseFloat(document.getElementById('createPower').value);
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ acronym, mass, power })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const newId = await response.json();
+                showMessage(`✅ Created satellite with ID: ${newId}`, 'success');
+                document.getElementById('createForm').reset();
+                loadSatellites();
+            } catch (error) {
+                showMessage(`❌ Failed to create satellite: ${error.message}`, 'error');
+            }
+        }
+
+        // ============================================
+        // Load satellites for select dropdowns
+        // ============================================
+        async function loadSatellitesForSelect(tabName) {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const satellites = await response.json();
+                satellitesCache = satellites;
+
+                const selectId = `${tabName}Select`;
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">-- Select a satellite --</option>';
+
+                satellites.forEach(sat => {
+                    const option = document.createElement('option');
+                    option.value = sat.id;
+                    option.textContent = `ID ${sat.id}: ${sat.acronym} (Mass: ${sat.mass}kg, Power: ${sat.power}W)`;
+                    option.dataset.satellite = JSON.stringify(sat);
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                showMessage(`Failed to load satellites: ${error.message}`, 'error');
+            }
+        }
+
+        // ============================================
+        // UPDATE (PUT): Full replacement
+        // ============================================
+        function populateUpdateForm() {
+            const select = document.getElementById('updateSelect');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption.dataset.satellite) {
+                const sat = JSON.parse(selectedOption.dataset.satellite);
+                document.getElementById('updateAcronym').value = sat.acronym;
+                document.getElementById('updateMass').value = sat.mass;
+                document.getElementById('updatePower').value = sat.power;
+            }
+        }
+
+        async function updateSatellite(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('updateSelect').value;
+            const acronym = document.getElementById('updateAcronym').value;
+            const mass = parseFloat(document.getElementById('updateMass').value);
+            const power = parseFloat(document.getElementById('updatePower').value);
+
+            try {
+                const response = await fetch(`${API_ENDPOINT}${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ acronym, mass, power })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                showMessage(`✅ Updated satellite ${id}`, 'success');
+                loadSatellites();
+                loadSatellitesForSelect('update');
+            } catch (error) {
+                showMessage(`❌ Failed to update satellite: ${error.message}`, 'error');
+            }
+        }
+
+        // ============================================
+        // PATCH: Partial update
+        // ============================================
+        function populatePatchForm() {
+            const select = document.getElementById('patchSelect');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption.dataset.satellite) {
+                const sat = JSON.parse(selectedOption.dataset.satellite);
+
+                // Show current data
+                document.getElementById('patchCurrentData').style.display = 'block';
+                document.getElementById('patchCurrentJson').textContent = JSON.stringify(sat, null, 2);
+
+                // Populate fields
+                document.getElementById('patchAcronym').value = sat.acronym;
+                document.getElementById('patchMass').value = sat.mass;
+                document.getElementById('patchPower').value = sat.power;
+
+                // Uncheck all checkboxes and disable fields
+                document.getElementById('patchAcronymCheck').checked = false;
+                document.getElementById('patchMassCheck').checked = false;
+                document.getElementById('patchPowerCheck').checked = false;
+                toggleField('patchAcronym', false);
+                toggleField('patchMass', false);
+                toggleField('patchPower', false);
+            }
+        }
+
+        function toggleField(fieldId, enabled) {
+            document.getElementById(fieldId).disabled = !enabled;
+        }
+
+        async function patchSatellite(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('patchSelect').value;
+            const updateData = {};
+
+            if (document.getElementById('patchAcronymCheck').checked) {
+                updateData.acronym = document.getElementById('patchAcronym').value;
+            }
+            if (document.getElementById('patchMassCheck').checked) {
+                updateData.mass = parseFloat(document.getElementById('patchMass').value);
+            }
+            if (document.getElementById('patchPowerCheck').checked) {
+                updateData.power = parseFloat(document.getElementById('patchPower').value);
+            }
+
+            if (Object.keys(updateData).length === 0) {
+                showMessage('⚠️ Please select at least one field to update', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_ENDPOINT}${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                showMessage(`✅ Partially updated satellite ${id}`, 'success');
+                loadSatellites();
+                loadSatellitesForSelect('patch');
+            } catch (error) {
+                showMessage(`❌ Failed to patch satellite: ${error.message}`, 'error');
+            }
+        }
+
+        // ============================================
+        // DELETE: Remove satellite
+        // ============================================
+        function showDeleteConfirmation() {
+            const select = document.getElementById('deleteSelect');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption.dataset.satellite) {
+                const sat = JSON.parse(selectedOption.dataset.satellite);
+                document.getElementById('deleteConfirmation').style.display = 'block';
+                document.getElementById('deleteDetails').innerHTML = `
+                    <strong>ID:</strong> ${sat.id}<br>
+                    <strong>Acronym:</strong> ${sat.acronym}<br>
+                    <strong>Mass:</strong> ${sat.mass} kg<br>
+                    <strong>Power:</strong> ${sat.power} W
+                `;
+            }
+        }
+
+        function cancelDelete() {
+            document.getElementById('deleteSelect').value = '';
+            document.getElementById('deleteConfirmation').style.display = 'none';
+        }
+
+        async function deleteSatellite(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('deleteSelect').value;
+
+            try {
+                const response = await fetch(`${API_ENDPOINT}${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                showMessage(`✅ Deleted satellite ${id}`, 'success');
+                cancelDelete();
+                loadSatellites();
+                loadSatellitesForSelect('delete');
+            } catch (error) {
+                showMessage(`❌ Failed to delete satellite: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

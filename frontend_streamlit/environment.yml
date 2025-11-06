@@ -1,0 +1,10 @@
+name: streamlit-frontend
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - streamlit>=1.39.0
+      - requests>=2.32.0

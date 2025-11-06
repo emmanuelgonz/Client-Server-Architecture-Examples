@@ -112,7 +112,7 @@ fastapi dev main.py
 **Step 2: Seed database with sample satellites**
 
 ```bash
-python seed_database.py
+python3 seed_database.py
 ```
 
 **Step 3: Start a frontend**

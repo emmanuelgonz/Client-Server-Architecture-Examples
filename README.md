@@ -73,6 +73,12 @@ cd backend_sql
 conda env create -f environment.yml
 conda activate sqlite-backend
 fastapi dev main.py
+
+# ORM Backend
+cd backend_orm
+conda env create -f environment.yml
+conda activate orm-backend
+fastapi dev main.py
 ```
 
 **Step 2: Start a frontend**

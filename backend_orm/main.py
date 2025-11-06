@@ -1,6 +1,7 @@
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 class Satellite(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -34,6 +35,15 @@ args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, connect_args=args)
 
 app = FastAPI(lifespan=lifespan)
+
+# Enable CORS for frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_session():
     with Session(engine) as session:

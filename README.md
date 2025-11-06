@@ -88,7 +88,7 @@ fastapi dev main.py
 cd ../frontend_streamlit
 conda env create -f environment.yml
 conda activate streamlit-frontend
-streamlit run main.py
+streamlit run main.py --server.headless true
 
 # OR HTML (Browser)
 cd ../frontend_html
@@ -122,7 +122,7 @@ python seed_database.py
 cd ../frontend_tracking_streamlit
 conda env create -f environment.yml
 conda activate satellite-tracking-frontend
-streamlit run main.py
+streamlit run main.py --server.headless true
 
 # OR HTML (Browser)
 cd ../frontend_tracking_html
